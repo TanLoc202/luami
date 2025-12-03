@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import time
 import uuid
@@ -10,8 +10,8 @@ CORS(app)
 
 # --- CẤU HÌNH SEPAY (DEMO) ---
 # Trong thực tế, bạn nên để các thông tin này trong biến môi trường (Environment Variables) trên Render
-SEPAY_BANK_ACCOUNT = "0364887309"  # Số tài khoản nhận tiền
-SEPAY_BANK_NAME = "MBBank"         # Tên ngân hàng (MBBank, VCB, TPBank...)
+SEPAY_BANK_ACCOUNT = "0345633460"  # Số tài khoản nhận tiền
+SEPAY_BANK_NAME = "MBBank"         # Tên ngân hàng (MBBank)
 SEPAY_API_KEY = "my_secret_sepay_token" # Token bảo mật webhook SePay (cấu hình bên SePay)
 
 
@@ -27,6 +27,9 @@ def home():
         "timestamp": datetime.now().isoformat()
     })
 
+@app.route('/form/taodon')
+def taodon():
+    return render_template('taodon.html')
 
 # --- CHỨC NĂNG THANH TOÁN SEPAY ---
 
@@ -114,28 +117,27 @@ def sepay_webhook():
     #   "gateway": "MBBank",
     #   "transactionDate": "...",
     #   "accountNumber": "...",
-    #   "content": "DH170123456 chuyen tien",
+    #   "content": "DH170123456",
     #   "transferType": "in",
     #   "transferAmount": 50000,
     #   ...
     # }
 
     # 1. Lấy nội dung chuyển khoản
-    transfer_content = data.get('content', '') 
+    transfer_code = data.get('code', '') 
     transfer_amount = data.get('transferAmount', 0)
     
     # 2. Tìm đơn hàng tương ứng trong DB
-    # Logic: Duyệt qua DB xem mã đơn hàng nào nằm trong nội dung chuyển khoản
     found_order = None
     for code, order in orders_db.items():
-        # Kiểm tra xem mã đơn (VD: DH123) có nằm trong nội dung CK (VD: "DH123 thanh toan") không
-        if code in transfer_content:
+
+        if code in transfer_code:
             found_order = order
             break
             
     if not found_order:
-        # Không tìm thấy đơn: Vẫn trả về success=True để SePay không retry liên tục
-        print(f"Không tìm thấy đơn hàng cho giao dịch: {transfer_content}")
+
+        print(f"Không tìm thấy đơn hàng cho giao dịch: {transfer_code}")
         return jsonify({"success": False, "message": "Order not found"}), 200
 
     # 3. Kiểm tra số tiền (Cho phép sai số nhỏ nếu cần, ở đây check chính xác hoặc lớn hơn)
