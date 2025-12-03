@@ -1,4 +1,3 @@
 Flask==3.0.0
 flask-cors==4.0.0
 gunicorn==21.2.0
-    *(Gunicorn là công cụ cần thiết để chạy Python Web Server trên môi trường Production)*.
