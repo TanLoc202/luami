@@ -14,11 +14,10 @@ SEPAY_BANK_ACCOUNT = "0345633460"  # Số tài khoản nhận tiền
 SEPAY_BANK_NAME = "MBBank"         # Tên ngân hàng (MBBank)
 SEPAY_API_KEY = "my_secret_sepay_token" # Token bảo mật webhook SePay (cấu hình bên SePay)
 
-
 # Giả lập database (Trong thực tế nên dùng PostgreSQL hoặc MongoDB)
 orders_db = {}
 
-
+# --- CÁC API CHÍNH ---
 @app.route('/')
 def home():
     return jsonify({
@@ -26,12 +25,6 @@ def home():
         "message": "API Thanh toán (SePay Integration) đang chạy!",
         "timestamp": datetime.now().isoformat()
     })
-
-@app.route('/form/taodon')
-def taodon():
-    return render_template('taodon.html')
-
-# --- CHỨC NĂNG THANH TOÁN SEPAY ---
 
 # 1. API TẠO ĐƠN HÀNG & LẤY LINK THANH TOÁN
 @app.route('/api/payment/create', methods=['POST'])
